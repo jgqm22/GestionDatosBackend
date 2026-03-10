@@ -11,6 +11,7 @@ public record PedidoResponse(
         String itemId,
         int cantidad,
         String canalDeVenta,
-        String estatusPedido
+        String estatusPedido,
+        String userId
 ) {
 }

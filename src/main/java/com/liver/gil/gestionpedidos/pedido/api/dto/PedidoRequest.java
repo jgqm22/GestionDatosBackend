@@ -9,6 +9,7 @@ package com.liver.gil.gestionpedidos.pedido.api.dto;
 public record PedidoRequest(
         int cantidad,
         String canalDeVenta,
-        String estatusPedido
+        String estatusPedido,
+        String userId
 ) {
 }

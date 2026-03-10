@@ -21,4 +21,5 @@ public class Pedido {
     private int cantidad;
     private String canalDeVenta;
     private String estatusPedido;
+    private String userId;
 }
