@@ -17,7 +17,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Cliente {
 
     @Id
-    private String id;
+    private String userId;
     private String nombre;
     private String apellidoPaterno;
     private String apellidoMaterno;

@@ -1,6 +1,7 @@
 
 package com.liver.gil.gestionpedidos.cliente.api.controller;
 
+import com.liver.gil.gestionpedidos.cliente.api.dto.ClienteConPedidosResponse;
 import com.liver.gil.gestionpedidos.cliente.api.dto.ClienteRequest;
 import com.liver.gil.gestionpedidos.cliente.api.dto.ClienteResponse;
 import com.liver.gil.gestionpedidos.cliente.application.service.ClienteService;
@@ -33,7 +34,7 @@ public class ClienteController {
      */
     @Operation(summary = "Obtiene una lista de los Clientes registrados.")
     @GetMapping
-    public List<ClienteResponse> obtenerClientes() {
+    public List<ClienteConPedidosResponse> obtenerClientes() {
         return this.clienteService.obtenerClientes();
     }
 
@@ -45,7 +46,7 @@ public class ClienteController {
      */
     @Operation(summary = "Obtiene un Cliente a partir de su id.")
     @GetMapping("/{id}")
-    public ClienteResponse obtenerCliente(@PathVariable String id) {
+    public ClienteConPedidosResponse obtenerCliente(@PathVariable String id) {
         return this.clienteService.obtenerClientePorId(id);
     }
 

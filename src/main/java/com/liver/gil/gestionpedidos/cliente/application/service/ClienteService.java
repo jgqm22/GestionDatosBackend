@@ -1,11 +1,15 @@
 package com.liver.gil.gestionpedidos.cliente.application.service;
 
+import com.liver.gil.gestionpedidos.cliente.api.dto.ClienteConPedidosResponse;
 import com.liver.gil.gestionpedidos.cliente.api.dto.ClienteRequest;
 import com.liver.gil.gestionpedidos.cliente.api.dto.ClienteResponse;
+import com.liver.gil.gestionpedidos.cliente.api.dto.PedidosDelClienteResponse;
 import com.liver.gil.gestionpedidos.cliente.application.mapper.ClienteMapper;
 import com.liver.gil.gestionpedidos.cliente.domain.model.Cliente;
+import com.liver.gil.gestionpedidos.cliente.infraestructure.client.PedidosDelClienteRestClient;
 import com.liver.gil.gestionpedidos.cliente.infraestructure.repository.ClienteRepository;
 import com.liver.gil.gestionpedidos.common.exception.ObjetoNoEncontradoException;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +22,7 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepository;
     private final ClienteMapper clienteMapper;
+    private final PedidosDelClienteRestClient pedidosDelClienteRestClient;
 
     /**
      * Constructor.
@@ -26,9 +31,11 @@ public class ClienteService {
      * @param clienteMapper
      */
     public ClienteService(ClienteRepository clienteRepository,
-                          ClienteMapper clienteMapper) {
+                          ClienteMapper clienteMapper,
+                          PedidosDelClienteRestClient pedidosDelClienteRestClient) {
         this.clienteRepository = clienteRepository;
         this.clienteMapper = clienteMapper;
+        this.pedidosDelClienteRestClient = pedidosDelClienteRestClient;
     }
 
     /**
@@ -63,8 +70,22 @@ public class ClienteService {
      *
      * @return
      */
-    public List<ClienteResponse> obtenerClientes() {
-        return this.clienteMapper.toResponseList(this.clienteRepository.findAll());
+    public List<ClienteConPedidosResponse> obtenerClientes() {
+        List<Cliente> clientes = this.clienteRepository.findAll();
+
+        List<ClienteConPedidosResponse> clientesConPedidos = null;
+        if(clientes != null && !clientes.isEmpty()){
+
+            //recupero todos los pedidos
+            List<PedidosDelClienteResponse> todosLosPedidos = this.pedidosDelClienteRestClient.obtenerPedidosCliente();
+
+            clientesConPedidos = clientes
+                    .stream()
+                    .map( cliente -> creaClienteConPedidosResponse(todosLosPedidos, cliente) )
+                    .toList();
+        }
+
+        return clientesConPedidos;
     }
 
     /**
@@ -73,9 +94,42 @@ public class ClienteService {
      * @param id
      * @return
      */
-    public ClienteResponse obtenerClientePorId(String id) {
+    public ClienteConPedidosResponse obtenerClientePorId(String id) {
+        //recupero el cliente...
         Cliente cliente = clienteRepository.findById(id).orElseThrow(() -> new ObjetoNoEncontradoException(id));
-        return this.clienteMapper.toResponse(cliente);
+
+        //recupero todos los pedidos
+        List<PedidosDelClienteResponse> todosLosPedidos = this.pedidosDelClienteRestClient.obtenerPedidosCliente();
+
+        return creaClienteConPedidosResponse(todosLosPedidos, cliente);
+    }
+
+    /**
+     * Recupera solos los pedidos del cliente actual...
+     * @param todosLosPedidos
+     * @param cliente
+     * @return
+     */
+    private static @NonNull ClienteConPedidosResponse creaClienteConPedidosResponse(
+            List<PedidosDelClienteResponse> todosLosPedidos, Cliente cliente) {
+        //filtro solo los pedidos del cliente actual, ya que el servicio no tiene una búsqueda de pedidos por id del cliente...
+        List<PedidosDelClienteResponse> pedidosFiltrados = null;
+        if(todosLosPedidos != null && !todosLosPedidos.isEmpty()) {
+            pedidosFiltrados = todosLosPedidos
+                    .stream()
+                    .filter( pedido -> cliente.getUserId().equals( pedido.userId()))
+                    .toList();
+        }
+
+        //creo el response ya con la información de los pedidos del cliente
+        return new ClienteConPedidosResponse(
+                cliente.getUserId(),
+                cliente.getNombre(),
+                cliente.getApellidoPaterno(),
+                cliente.getApellidoMaterno(),
+                cliente.getCorreoElectronico(),
+                pedidosFiltrados
+        );
     }
 
     /**
