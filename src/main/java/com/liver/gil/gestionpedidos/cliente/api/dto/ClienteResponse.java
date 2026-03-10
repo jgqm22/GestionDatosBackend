@@ -15,5 +15,6 @@ public record ClienteResponse(
         String apellidoPaterno,
         String apellidoMaterno,
         String correoElectronico
+
 ) {
 }
