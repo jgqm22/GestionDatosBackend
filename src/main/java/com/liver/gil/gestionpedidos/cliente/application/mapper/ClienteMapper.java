@@ -20,7 +20,7 @@ public interface ClienteMapper {
      * @param request
      * @return
      */
-    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "userId", ignore = true)
     Cliente toEntity(ClienteRequest request);
 
     /**
